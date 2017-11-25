@@ -44,18 +44,22 @@ status ClearList(SqList &L);
 status ListEmpty(SqList L);
 int ListLength(SqList L);
 status GetElem(SqList L, int i, ElemType &e);
-status LocateElem(SqList L, ElemType e); //简化过
+status LocateElem(SqList L, ElemType e,status (*target)(ElemType a,ElemType b));
 status PriorElem(SqList L, ElemType cur, ElemType &pre_e);
 status NextElem(SqList L, ElemType cur, ElemType &next_e);
 status ListInsert(SqList &L, int i, ElemType e);
 status ListDelete(SqList &L, int i, ElemType &e);
-status ListTrabverse(SqList L); //简化过
+status ListTrabverse(SqList L,status (*compare)(ElemType a));
 status ListDisplay(SqList L);
+status Equal(ElemType a,ElemType b);
+status ElemDisplay(ElemType a);
 /*--------------------------------------------*/
 int main(void)
 {
 	SqList L;
-	int op = 1, m, n;
+	int op = 1, m;
+	ElemType t,n;
+	status flag;
 	while (op)
 	{
 		system("cls");
@@ -112,22 +116,48 @@ int main(void)
 			getchar();
 			break;
 		case 6:
-			printf("\n----GetElem功能待实现！\n");
+			printf("请输入要获取的元素的序号：\n");
+			scanf("%d",&m);
+			GetElem(L,m,n);
+			printf("The No.%d Element is %d.\n",m,n);
 			getchar();
 			getchar();
 			break;
 		case 7:
-			printf("\n----LocateElem功能待实现！\n");
+			printf("请输入你要寻找的元素值：\n");
+			scanf("%d",&n);
+			if((flag=LocateElem(L,n,Equal))){
+				printf("Found it, the index is %d.\n",flag);
+			}
+			else{
+				printf("Can't find it!\n");
+			}
 			getchar();
 			getchar();
 			break;
 		case 8:
-			printf("\n----PriorElem功能待实现！\n");
+			printf("\n请输入该元素：\n");
+			scanf("%d",&t);
+			flag=PriorElem(L,t,n);
+			if(flag==TRUE)
+				printf("The PriorElem of Element %d is %d.\n",t,n);
+			else if(flag==OVERFLOW)
+				printf("It's the first element!\n");
+			else
+				printf("Can't find the element!\n");
 			getchar();
 			getchar();
 			break;
 		case 9:
-			printf("\n----NextElem功能待实现！\n");
+			printf("\n请输入该元素：\n");
+			scanf("%d",&t);
+			flag=NextElem(L,t,n);
+			if(flag==TRUE)
+				printf("The NextElem of Element %d is %d.\n",t,n);
+			else if(flag==OVERFLOW)
+				printf("It's the last element!\n");
+			else
+				printf("Can't find the element!\n");
 			getchar();
 			getchar();
 			break;
@@ -152,8 +182,7 @@ int main(void)
 			getchar();
 			break;
 		case 12:
-			//printf("\n----ListTrabverse功能待实现！\n");
-			if (!ListTrabverse(L))
+			if (!ListTrabverse(L,ElemDisplay))
 				printf("线性表是空表！\n");
 			getchar();
 			getchar();
@@ -171,6 +200,18 @@ int main(void)
 	return 0;
 }
 
+status Equal(ElemType a,ElemType b){
+	if(a==b)
+		return TRUE;
+	else
+		return FALSE;
+}
+
+status ElemDisplay(ElemType a){
+	printf("This element is %d.\n",a);
+	return OK;
+}
+
 status ListDisplay(SqList L)
 {
 	int i;
@@ -180,7 +221,7 @@ status ListDisplay(SqList L)
 		printf("List Size: %d \n", L.listsize);
 		printf("List Element(Index Value):\n");
 		for (i = 0; i < L.length; i++)
-			printf("%d. %d\n", i, L.elem[i]);
+			printf("%d. %d\n", i+1, L.elem[i]);
 	}
 	else
 	{
@@ -211,9 +252,7 @@ status ClearList(SqList &L)
 {
 	ElemType *p;
 	p = L.elem;
-	L.elem = nullptr;
-	L.length = 0;
-	L.listsize = LIST_INIT_SIZE;
+	IntiaList(L);
 	free(p);
 	return OK;
 }
@@ -237,9 +276,46 @@ status GetElem(SqList L, int i, ElemType &e)
 	return OK;
 }
 
-status LocateElem(SqList L, ElemType e); //简化过
-status PriorElem(SqList L, ElemType cur, ElemType &pre_e);
-status NextElem(SqList L, ElemType cur, ElemType &next_e);
+status LocateElem(SqList L, ElemType e, status (*target)(ElemType a,ElemType b)){
+	if(!ListEmpty(L))
+	{
+		int i;
+		for(i=0;i<L.length;i++){
+			if(target(e,L.elem[i])){
+				return i+1;
+			}
+		}
+	}
+	return ERROR;	
+}
+status PriorElem(SqList L, ElemType cur, ElemType &pre_e){
+	int i;
+	if(!ListEmpty(L)){
+		for(i=0;i<L.length;i++){
+			if(L.elem[i]==cur){
+				if(i==0)
+					return OVERFLOW;
+				pre_e = L.elem[i-1];
+				return TRUE;
+			}
+		}
+		return FALSE;
+	}
+}
+status NextElem(SqList L, ElemType cur, ElemType &next_e){
+	int i;
+	if(!ListEmpty(L)){
+		for(i=0;i<L.length;i++){
+			if(L.elem[i]==cur){
+				if(i==L.length-1)
+					return OVERFLOW;
+				next_e = L.elem[i+1];
+				return TRUE;
+			}
+		}
+		return FALSE;
+	}
+}
 
 status ListInsert(SqList &L, int i, ElemType e)
 {
@@ -273,12 +349,14 @@ status ListDelete(SqList &L, int i, ElemType &e)
 	return OK;
 }
 
-status ListTrabverse(SqList L)
+status ListTrabverse(SqList L,status (*target)(ElemType a))
 {
 	int i;
+	if(ListEmpty(L))
+		return ERROR;
 	printf("\n-----------all elements -----------------------\n");
 	for (i = 0; i < L.length; i++)
-		printf("%d ", L.elem[i]);
-	printf("\n------------------ end ------------------------\n");
+		(*target)(L.elem[i]);
+	printf("------------------ end ------------------------\n");
 	return L.length;
 }

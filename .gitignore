@@ -4,3 +4,4 @@ cmake-build-debug
 *.exe
 makefile
 launch.json
+.vscode/settings.json
