@@ -18,11 +18,12 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <stdlib.h>
+#include <typeinfo>
 #define TRUE 1
 #define FALSE 0
 #define OK 1
 #define ERROR 0
-#define INFEASTABLE -1
+#define INFEASIBLE -1
 #define OVERFLOW -2
 
 typedef int status;
@@ -38,48 +39,64 @@ typedef struct
 	int listsize;
 } SqList;
 
+status isList(SqList L);
 status IntiaList(SqList &L);
 status DestroyList(SqList &L);
 status ClearList(SqList &L);
 status ListEmpty(SqList L);
 int ListLength(SqList L);
 status GetElem(SqList L, int i, ElemType &e);
-status LocateElem(SqList L, ElemType e,status (*target)(ElemType a,ElemType b));
+status LocateElem(SqList L, ElemType e, status (*target)(ElemType a, ElemType b));
 status PriorElem(SqList L, ElemType cur, ElemType &pre_e);
 status NextElem(SqList L, ElemType cur, ElemType &next_e);
 status ListInsert(SqList &L, int i, ElemType e);
 status ListDelete(SqList &L, int i, ElemType &e);
-status ListTrabverse(SqList L,status (*compare)(ElemType a));
+status ListTrabverse(SqList L, status (*compare)(ElemType &a));
 status ListDisplay(SqList L);
-status Equal(ElemType a,ElemType b);
-status ElemDisplay(ElemType a);
+status Equal(ElemType a, ElemType b);
+status Greater(ElemType a, ElemType b);
+status Less(ElemType a, ElemType b);
+status ElemDisplay(ElemType &a);
+status ElemPlus(ElemType &a);
+status SaveToFile(SqList L, char *filename);
+status LoadFromFile(SqList &L, char *filename);
 /*--------------------------------------------*/
 int main(void)
 {
-	SqList L;
-	int op = 1, m;
-	ElemType t,n;
+	SqList L[10];
+	int op = 1, m, num = 0;
+	ElemType t, n;
 	status flag;
+	char filename[30];
 	while (op)
 	{
 		system("cls");
 		printf("\n\n");
 		printf("      Menu for Linear Table On Sequence Structure \n");
 		printf("-------------------------------------------------\n");
-		printf("    	  1. IntiaList       7. LocateElem\n");
-		printf("    	  2. DestroyList     8. PriorElem\n");
-		printf("    	  3. ClearList       9. NextElem \n");
-		printf("    	  4. ListEmpty       10. ListInsert\n");
-		printf("    	  5. ListLength      11. ListDelete\n");
-		printf("    	  6. GetElem         12. ListTrabverse\n");
-		printf("    	  0. Exit            13. ListDisplay\n");
+		printf("    	  1. IntiaList       9. NextElem\n");
+		printf("    	  2. DestroyList     10. ListInsert\n");
+		printf("    	  3. ClearList       11. ListDelete\n");
+		printf("    	  4. ListEmpty       12. ListTrabverse\n");
+		printf("    	  5. ListLength      13. ListDisplay\n");
+		printf("    	  6. GetElem         14. LoadFromFile\n");
+		printf("    	  7. LocateElem      15. SaveToFile\n");
+		printf("    	  8. PriorElem       0. Exit\n");
+		printf("          99. ChangeListPlot Current Plot %d\n", num);
 		printf("-------------------------------------------------\n");
-		printf("    请选择你的操作[0~13]:");
+		printf("    请选择你的操作[0~99]:");
 		scanf("%d", &op);
 		switch (op)
 		{
+		case 99:
+			printf("当前表栏位为 %d ,请输入你想切换的栏位号[0-9]：\n", num);
+			scanf("%d", &num);
+			printf("成功切换到栏位 %d !\n", num);
+			getchar();
+			getchar();
+			break;
 		case 1:
-			if (IntiaList(L) == OK)
+			if (IntiaList(L[num]) == OK)
 				printf("线性表创建成功！\n");
 			else
 				printf("线性表创建失败！\n");
@@ -87,7 +104,11 @@ int main(void)
 			getchar();
 			break;
 		case 2:
-			if (DestroyList(L) == OK)
+			if (!isList(L[num]))
+			{
+				printf("顺序表不存在！\n");
+			}
+			else if (DestroyList(L[num]) == OK)
 				printf("线性表删除成功！\n");
 			else
 				printf("线性表删除失败！\n");
@@ -95,7 +116,11 @@ int main(void)
 			getchar();
 			break;
 		case 3:
-			if (ClearList(L) == OK)
+			if (!isList(L[num]))
+			{
+				printf("顺序表不存在！\n");
+			}
+			else if (ClearList(L[num]) == OK)
 				printf("线性表清空成功！\n");
 			else
 				printf("线性表清空失败！\n");
@@ -103,7 +128,11 @@ int main(void)
 			getchar();
 			break;
 		case 4:
-			if (ListEmpty(L) == TRUE)
+			if (!isList(L[num]))
+			{
+				printf("顺序表不存在！\n");
+			}
+			else if (ListEmpty(L[num]) == TRUE)
 				printf("线性表是空表！\n");
 			else
 				printf("线性表不是空表！\n");
@@ -111,84 +140,192 @@ int main(void)
 			getchar();
 			break;
 		case 5:
-			printf("List Length is %d.\n", ListLength(L));
+			if (!isList(L[num]))
+				printf("顺序表不存在！\n");
+			else
+				printf("List Length is %d.\n", ListLength(L[num]));
 			getchar();
 			getchar();
 			break;
 		case 6:
-			printf("请输入要获取的元素的序号：\n");
-			scanf("%d",&m);
-			GetElem(L,m,n);
-			printf("The No.%d Element is %d.\n",m,n);
+			if (!isList(L[num]))
+				printf("顺序表不存在！\n");
+			else
+			{
+				printf("请输入要获取的元素的序号：\n");
+				scanf("%d", &m);
+				GetElem(L[num], m, n);
+				printf("The No.%d Element is %d.\n", m, n);
+			}
 			getchar();
 			getchar();
 			break;
 		case 7:
-			printf("请输入你要寻找的元素值：\n");
-			scanf("%d",&n);
-			if((flag=LocateElem(L,n,Equal))){
-				printf("Found it, the index is %d.\n",flag);
-			}
-			else{
-				printf("Can't find it!\n");
+			if (!isList(L[num]))
+				printf("顺序表不存在！\n");
+			else
+			{
+				int tmp;
+				printf("请选择比较函数功能：\n");
+				printf("1.大于输入值   2.小于输入值  3.与输入值相等\n");
+				scanf("%d", &tmp);
+				switch (tmp)
+				{
+				case 1:
+					printf("请输入用于比较的元素值：\n");
+					scanf("%d", &n);
+					if ((flag = LocateElem(L[num], n, Greater)))
+						printf("Found it, the index is %d.\n", flag);
+					else
+						printf("Can't find it!\n");
+					break;
+				case 2:
+					printf("请输入用于比较的元素值：\n");
+					scanf("%d", &n);
+					if ((flag = LocateElem(L[num], n, Less)))
+						printf("Found it, the index is %d.\n", flag);
+					else
+						printf("Can't find it!\n");
+					break;
+				case 3:
+					printf("请输入你要寻找的元素值：\n");
+					scanf("%d", &n);
+					if ((flag = LocateElem(L[num], n, Equal)))
+						printf("Found it, the index is %d.\n", flag);
+					else
+						printf("Can't find it!\n");
+					break;
+				default:
+					printf("操作码错误！\n");
+				}
 			}
 			getchar();
 			getchar();
 			break;
 		case 8:
-			printf("\n请输入该元素：\n");
-			scanf("%d",&t);
-			flag=PriorElem(L,t,n);
-			if(flag==TRUE)
-				printf("The PriorElem of Element %d is %d.\n",t,n);
-			else if(flag==OVERFLOW)
-				printf("It's the first element!\n");
+			if (!isList(L[num]))
+				printf("顺序表不存在！\n");
 			else
-				printf("Can't find the element!\n");
+			{
+				printf("\n请输入该元素：\n");
+				scanf("%d", &t);
+				flag = PriorElem(L[num], t, n);
+				if (flag == TRUE)
+					printf("The PriorElem of Element %d is %d.\n", t, n);
+				else if (flag == OVERFLOW)
+					printf("It's the first element!\n");
+				else if (flag == INFEASIBLE)
+					;
+				else
+					printf("Can't find the element!\n");
+			}
 			getchar();
 			getchar();
 			break;
 		case 9:
-			printf("\n请输入该元素：\n");
-			scanf("%d",&t);
-			flag=NextElem(L,t,n);
-			if(flag==TRUE)
-				printf("The NextElem of Element %d is %d.\n",t,n);
-			else if(flag==OVERFLOW)
-				printf("It's the last element!\n");
+			if (!isList(L[num]))
+				printf("顺序表不存在！\n");
 			else
-				printf("Can't find the element!\n");
+			{
+				printf("\n请输入该元素：\n");
+				scanf("%d", &t);
+				flag = NextElem(L[num], t, n);
+				if (flag == TRUE)
+					printf("The NextElem of Element %d is %d.\n", t, n);
+				else if (flag == OVERFLOW)
+					printf("It's the last element!\n");
+				else if (flag == INFEASIBLE)
+					;
+				else
+					printf("Can't find the element!\n");
+			}
 			getchar();
 			getchar();
 			break;
 		case 10:
-			printf("请输入要插入的元素位置和元素值:\n");
-			scanf("%d%d", &m, &n);
-			if (ListInsert(L, m, n) == OK)
-				printf("插入元素成功！\n");
+			if (!isList(L[num]))
+				printf("顺序表不存在！\n");
 			else
-				printf("插入元素失败！\n");
+			{
+				printf("请输入要插入的元素位置和元素值:\n");
+				scanf("%d%d", &m, &n);
+				if (ListInsert(L[num], m, n) == OK)
+					printf("插入元素成功！\n");
+				else
+					printf("插入元素失败！\n");
+			}
 			getchar();
 			getchar();
 			break;
 		case 11:
-			printf("请输入要删除的元素位置:\n");
-			scanf("%d", &m);
-			if (ListDelete(L, m, n) == OK)
-				printf("删除元素成功！删除值为 %d.\n", n);
+			if (!isList(L[num]))
+				printf("顺序表不存在！\n");
 			else
-				printf("删除元素失败！\n");
+			{
+				printf("请输入要删除的元素位置:\n");
+				scanf("%d", &m);
+				if (ListDelete(L[num], m, n) == OK)
+					printf("删除元素成功！删除值为 %d.\n", n);
+				else
+					printf("删除元素失败！\n");
+			}
 			getchar();
 			getchar();
 			break;
 		case 12:
-			if (!ListTrabverse(L,ElemDisplay))
-				printf("线性表是空表！\n");
+			if (!isList(L[num]))
+				printf("顺序表不存在！\n");
+			else
+			{
+				int tmp;
+				printf("请选择遍历函数功能：\n");
+				printf("1.输出每个元素   2.每个元素值增加1\n");
+				scanf("%d", &tmp);
+				switch (tmp)
+				{
+				case 1:
+					ListTrabverse(L[num], ElemDisplay);
+					break;
+				case 2:
+					ListTrabverse(L[num], ElemPlus);
+					break;
+				default:
+					printf("操作码错误！\n");
+				}
+			}
 			getchar();
 			getchar();
 			break;
 		case 13:
-			ListDisplay(L);
+			if (!isList(L[num]))
+				printf("顺序表不存在！\n");
+			else
+				ListDisplay(L[num]);
+			getchar();
+			getchar();
+			break;
+		case 14:
+			printf("请输入要读取的文件名：\n");
+			scanf("%s", &filename);
+			if (LoadFromFile(L[num], filename))
+				printf("读取成功！\n");
+			else
+				printf("读取失败！\n");
+			getchar();
+			getchar();
+			break;
+		case 15:
+			if (!isList(L[num]))
+				printf("顺序表不存在！\n");
+			else
+			{
+				printf("请输入要存储的文件名：\n");
+				scanf("%s", &filename);
+				if (SaveToFile(L[num], filename))
+					printf("存储成功！\n");
+				else
+					printf("存储失败！\n");
+			}
 			getchar();
 			getchar();
 			break;
@@ -200,28 +337,101 @@ int main(void)
 	return 0;
 }
 
-status Equal(ElemType a,ElemType b){
-	if(a==b)
+status isList(SqList L)
+{
+	if (L.listsize != NULL)
 		return TRUE;
 	else
 		return FALSE;
 }
 
-status ElemDisplay(ElemType a){
-	printf("This element is %d.\n",a);
+status SaveToFile(SqList L, char *filename)
+{
+	if (!isList(L))
+	{
+		printf("顺序表不存在！\n");
+		return INFEASIBLE;
+	}
+	FILE *fp;
+	if ((fp = fopen(filename, "w")) == NULL)
+	{
+		printf("保存数据出错！\n");
+		return ERROR;
+	}
+	fwrite(&(L.length), sizeof(int), 1, fp);
+	fwrite(&(L.listsize), sizeof(int), 1, fp);
+	fwrite(L.elem, sizeof(ElemType), L.length, fp);
+	fclose(fp);
+	return OK;
+}
+
+status LoadFromFile(SqList &L, char *filename)
+{
+	if (!isList(L))
+	{
+		IntiaList(L);
+	}
+	FILE *fp;
+	if ((fp = fopen(filename, "r")) == NULL)
+	{
+		printf("读取数据出错！\n");
+		return ERROR;
+	}
+	fread(&(L.length), sizeof(int), 1, fp);
+	fread(&(L.listsize), sizeof(int), 1, fp);
+	fread(L.elem, sizeof(ElemType), L.length, fp);
+	fclose(fp);
+	return OK;
+}
+
+status Equal(ElemType a, ElemType b)
+{
+	if (a == b)
+		return TRUE;
+	else
+		return FALSE;
+}
+status Greater(ElemType a, ElemType b)
+{
+	if (a > b)
+		return TRUE;
+	else
+		return FALSE;
+}
+status Less(ElemType a, ElemType b)
+{
+	if (a < b)
+		return TRUE;
+	else
+		return FALSE;
+}
+
+status ElemDisplay(ElemType &a)
+{
+	printf("This element is %d.\n", a);
+	return OK;
+}
+status ElemPlus(ElemType &a)
+{
+	a++;
 	return OK;
 }
 
 status ListDisplay(SqList L)
 {
 	int i;
+	if (!isList(L))
+	{
+		printf("顺序表不存在！\n");
+		return INFEASIBLE;
+	}
 	if (!ListEmpty(L))
 	{
 		printf("List Length: %d\n", L.length);
 		printf("List Size: %d \n", L.listsize);
 		printf("List Element(Index Value):\n");
 		for (i = 0; i < L.length; i++)
-			printf("%d. %d\n", i+1, L.elem[i]);
+			printf("%d. %d\n", i + 1, L.elem[i]);
 	}
 	else
 	{
@@ -242,6 +452,11 @@ status IntiaList(SqList &L)
 
 status DestroyList(SqList &L)
 {
+	if (!isList(L))
+	{
+		printf("顺序表不存在！\n");
+		return INFEASIBLE;
+	}
 	free(L.elem);
 	L.length = NULL;
 	L.listsize = NULL;
@@ -250,6 +465,11 @@ status DestroyList(SqList &L)
 
 status ClearList(SqList &L)
 {
+	if (!isList(L))
+	{
+		printf("顺序表不存在！\n");
+		return INFEASIBLE;
+	}
 	ElemType *p;
 	p = L.elem;
 	IntiaList(L);
@@ -259,6 +479,11 @@ status ClearList(SqList &L)
 
 status ListEmpty(SqList L)
 {
+	if (!isList(L))
+	{
+		printf("顺序表不存在！\n");
+		return INFEASIBLE;
+	}
 	if (L.length == 0)
 		return TRUE;
 	else
@@ -267,49 +492,91 @@ status ListEmpty(SqList L)
 
 status ListLength(SqList L)
 {
+	if (!isList(L))
+	{
+		printf("顺序表不存在！\n");
+		return INFEASIBLE;
+	}
 	return L.length;
 }
 
 status GetElem(SqList L, int i, ElemType &e)
 {
+	if (!isList(L))
+	{
+		printf("顺序表不存在！\n");
+		return INFEASIBLE;
+	}
+	else if (i > L.length)
+	{
+		printf("超过顺序表长度！\n");
+		return OVERFLOW;
+	}
 	e = L.elem[i - 1];
 	return OK;
 }
 
-status LocateElem(SqList L, ElemType e, status (*target)(ElemType a,ElemType b)){
-	if(!ListEmpty(L))
+status LocateElem(SqList L, ElemType e, status (*target)(ElemType a, ElemType b))
+{
+	if (!isList(L))
+	{
+		printf("顺序表不存在！\n");
+		return INFEASIBLE;
+	}
+	if (!ListEmpty(L))
 	{
 		int i;
-		for(i=0;i<L.length;i++){
-			if(target(e,L.elem[i])){
-				return i+1;
+		for (i = 0; i < L.length; i++)
+		{
+			if (target(L.elem[i], e))
+			{
+				return i + 1;
 			}
 		}
 	}
-	return ERROR;	
+	return ERROR;
 }
-status PriorElem(SqList L, ElemType cur, ElemType &pre_e){
+
+status PriorElem(SqList L, ElemType cur, ElemType &pre_e)
+{
+	if (!isList(L))
+	{
+		printf("顺序表不存在！\n");
+		return INFEASIBLE;
+	}
 	int i;
-	if(!ListEmpty(L)){
-		for(i=0;i<L.length;i++){
-			if(L.elem[i]==cur){
-				if(i==0)
+	if (!ListEmpty(L))
+	{
+		for (i = 0; i < L.length; i++)
+		{
+			if (L.elem[i] == cur)
+			{
+				if (i == 0)
 					return OVERFLOW;
-				pre_e = L.elem[i-1];
+				pre_e = L.elem[i - 1];
 				return TRUE;
 			}
 		}
 		return FALSE;
 	}
 }
-status NextElem(SqList L, ElemType cur, ElemType &next_e){
+status NextElem(SqList L, ElemType cur, ElemType &next_e)
+{
+	if (!isList(L))
+	{
+		printf("顺序表不存在！\n");
+		return INFEASIBLE;
+	}
 	int i;
-	if(!ListEmpty(L)){
-		for(i=0;i<L.length;i++){
-			if(L.elem[i]==cur){
-				if(i==L.length-1)
+	if (!ListEmpty(L))
+	{
+		for (i = 0; i < L.length; i++)
+		{
+			if (L.elem[i] == cur)
+			{
+				if (i == L.length - 1)
 					return OVERFLOW;
-				next_e = L.elem[i+1];
+				next_e = L.elem[i + 1];
 				return TRUE;
 			}
 		}
@@ -319,6 +586,16 @@ status NextElem(SqList L, ElemType cur, ElemType &next_e){
 
 status ListInsert(SqList &L, int i, ElemType e)
 {
+	if (!isList(L))
+	{
+		printf("顺序表不存在！\n");
+		return INFEASIBLE;
+	}
+	if (i <= 0)
+	{
+		printf("输入位置有误！\n");
+		return OVERFLOW;
+	}
 	int j, k;
 	ElemType *node;
 	if (L.length == L.listsize)
@@ -328,6 +605,8 @@ status ListInsert(SqList &L, int i, ElemType e)
 			exit(OVERFLOW);
 		L.listsize += LISTINCREMENT;
 	}
+	if (i > L.length + 1)
+		i = L.length + 1;
 	for (j = L.length; j >= i; j--)
 	{
 		L.elem[j] = L.elem[j - 1];
@@ -339,6 +618,16 @@ status ListInsert(SqList &L, int i, ElemType e)
 
 status ListDelete(SqList &L, int i, ElemType &e)
 {
+	if (!isList(L))
+	{
+		printf("顺序表不存在！\n");
+		return INFEASIBLE;
+	}
+	else if (ListEmpty(L))
+	{
+		printf("顺序表为空！\n");
+		return ERROR;
+	}
 	int j;
 	e = L.elem[i - 1];
 	for (j = i - 1; j < L.length - 1; j++)
@@ -349,14 +638,20 @@ status ListDelete(SqList &L, int i, ElemType &e)
 	return OK;
 }
 
-status ListTrabverse(SqList L,status (*target)(ElemType a))
+status ListTrabverse(SqList L, status (*target)(ElemType &a))
 {
+	if (!isList(L))
+	{
+		printf("顺序表不存在！\n");
+		return INFEASIBLE;
+	}
 	int i;
-	if(ListEmpty(L))
+	if (ListEmpty(L))
+	{
+		printf("该表是空表！\n");
 		return ERROR;
-	printf("\n-----------all elements -----------------------\n");
+	}
 	for (i = 0; i < L.length; i++)
 		(*target)(L.elem[i]);
-	printf("------------------ end ------------------------\n");
 	return L.length;
 }
