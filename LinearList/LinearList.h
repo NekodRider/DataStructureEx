@@ -31,10 +31,13 @@ typedef struct
 {
 	ElemType *elem;
 	int length;
-	int listsize;
+	int listsize=NULL;
 } SqList;
 
+//判断是否为一个表
 status isList(SqList L);
+
+//12个ADT操作
 status IntiaList(SqList &L);
 status DestroyList(SqList &L);
 status ClearList(SqList &L);
@@ -47,11 +50,15 @@ status NextElem(SqList L, ElemType cur, ElemType &next_e);
 status ListInsert(SqList &L, int i, ElemType e);
 status ListDelete(SqList &L, int i, ElemType &e);
 status ListTrabverse(SqList L, status (*compare)(ElemType &a));
+
+//演示系统函数
 status ListDisplay(SqList L);
 status Equal(ElemType a, ElemType b);
 status Greater(ElemType a, ElemType b);
 status Less(ElemType a, ElemType b);
 status ElemDisplay(ElemType &a);
 status ElemPlus(ElemType &a);
+
+//文件读写
 status SaveToFile(SqList L, char *filename);
 status LoadFromFile(SqList &L, char *filename);

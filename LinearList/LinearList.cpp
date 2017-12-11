@@ -318,6 +318,7 @@ status LoadFromFile(SqList &L, char *filename)
 	if ((fp = fopen(filename, "r")) == NULL)
 	{
 		printf("读取数据出错！\n");
+		DestroyList(L);
 		return ERROR;
 	}
 	fread(&(L.length), sizeof(int), 1, fp);
@@ -385,6 +386,11 @@ status ListDisplay(SqList L)
 
 status IntiaList(SqList &L)
 {
+	if (isList(L))
+	{
+		printf("顺序表已存在！\n");
+		return INFEASIBLE;
+	}
 	L.elem = (ElemType *)malloc(LIST_INIT_SIZE * sizeof(ElemType));
 	if (!L.elem)
 		exit(OVERFLOW);
@@ -415,6 +421,7 @@ status ClearList(SqList &L)
 	}
 	ElemType *p;
 	p = L.elem;
+	L.listsize = NULL;
 	IntiaList(L);
 	free(p);
 	return OK;
@@ -433,7 +440,7 @@ status ListEmpty(SqList L)
 		return FALSE;
 }
 
-status ListLength(SqList L)
+int ListLength(SqList L)
 {
 	if (!isList(L))
 	{
@@ -502,6 +509,7 @@ status PriorElem(SqList L, ElemType cur, ElemType &pre_e)
 		}
 		return FALSE;
 	}
+	return ERROR;
 }
 status NextElem(SqList L, ElemType cur, ElemType &next_e)
 {
@@ -525,6 +533,7 @@ status NextElem(SqList L, ElemType cur, ElemType &next_e)
 		}
 		return FALSE;
 	}
+	return ERROR;
 }
 
 status ListInsert(SqList &L, int i, ElemType e)
@@ -571,6 +580,11 @@ status ListDelete(SqList &L, int i, ElemType &e)
 		printf("顺序表为空！\n");
 		return ERROR;
 	}
+	else if (i <= 0 || i > L.length + 1)
+	{
+		printf("输入位置有误！\n");
+		return OVERFLOW;
+	}
 	int j;
 	e = L.elem[i - 1];
 	for (j = i - 1; j < L.length - 1; j++)
@@ -596,5 +610,5 @@ status ListTrabverse(SqList L, status (*target)(ElemType &a))
 	}
 	for (i = 0; i < L.length; i++)
 		(*target)(L.elem[i]);
-	return L.length;
+	return TRUE;
 }
