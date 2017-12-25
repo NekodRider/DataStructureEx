@@ -34,8 +34,8 @@ typedef int ElemType;
 typedef struct Node{
 	char node_name;
 	ElemType data=NULLDATA;
-	struct Node *lchild=NULL;
-	struct Node *rchild=NULL;
+	struct Node *lchild=nullptr;
+	struct Node *rchild=nullptr;
 }*BinaryTree,Node;
 
 typedef struct SqQueue
